@@ -1,7 +1,10 @@
+import numpy as np
+import os
 import cv2
+import matplotlib.pyplot as plt
 
 # Cargar la imagen en color
-img = cv2.imread('mi_imagen.jpg')
+img = cv2.imread('./imagen/deep-learning.jpg')
 
 # Convertir la imagen a escala de grises
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -10,62 +13,59 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 resized = cv2.resize(gray, (256, 256), interpolation=cv2.INTER_AREA)
 
 # Guardar la imagen editada
-cv2.imwrite('mi_imagen_editada.jpg', resized)
+cv2.imwrite('./imagen/my_Imagen.jpg', resized)
 
+# ruta donde se encuentran las imágenes
+ruta_imagenes = './imagen/'
 
-#Para trazar mi cara editada, se podría utilizar el siguiente código en Python:
-import cv2
-import numpy as np
+# leer todas las imágenes en la ruta
+for filename in os.listdir(ruta_imagenes):
+    # asegurarse de que el archivo es una imagen
+    if filename.endswith('.jpg') or filename.endswith('.png'):
+        # leer la imagen y almacenarla en una matriz numpy
+        imagen = cv2.imread(os.path.join(ruta_imagenes, filename))
+        
+        # realizar operaciones en la imagen (por ejemplo, mostrarla en una ventana)
+        #cv2.imshow('Imagen', imagen)
+        #cv2.waitKey(0)
+        
+# Ruta completa de las imágenes
+path = ruta_imagenes
 
-# Cargar la imagen editada
-img = cv2.imread('mi_imagen_editada.jpg')
+# Obtener los nombres de los archivos en la ruta
+files = os.listdir(path)
 
-# Crear una cascada de clasificación para detectar caras
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+# Filtrar los archivos para obtener solo las imágenes
+image_files = [file for file in files if file.endswith('.jpg') or file.endswith('.png')]
 
-# Detectar la cara en la imagen
-faces = face_cascade.detectMultiScale(img, scaleFactor=1.1, minNeighbors=5)
+# Agregar la ruta completa a cada nombre de archivo
+full_paths = [os.path.join(path, file) for file in image_files]
 
-# Dibujar un rectángulo alrededor de la cara
-for (x, y, w, h) in faces:
-    cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+# Imprimir la lista de nombres de archivo completos
+#print(full_paths) 
 
-# Mostrar la imagen con la cara detectada
-cv2.imshow('Mi cara', img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-'''
-Para calcular y trazar la cara media de la cohorte, se podría utilizar 
-la técnica de Eigenfaces, que consiste en calcular los componentes principales de 
-las caras de la cohorte y utilizarlos para reconstruir una cara media. 
-El siguiente código en Python podría servir como ejemplo:
-'''
-import cv2
-import numpy as np
+# Cargar las imágenes de los rostros de tus compañeros de clase y convertirlas a escala de grises
+classmates_filenames = full_paths
+classmates_images = []
+for filename in classmates_filenames:
+    image = cv2.imread(filename)
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    classmates_images.append(gray_image)
 
-# Cargar las imágenes de la cohorte
-img1 = cv2.imread('imagen1.jpg', cv2.IMREAD_GRAYSCALE)
-img2 = cv2.imread('imagen2.jpg', cv2.IMREAD_GRAYSCALE)
-img3 = cv2.imread('imagen3.jpg', cv2.IMREAD_GRAYSCALE)
-# ...
-imgN = cv2.imread('imagenN.jpg', cv2.IMREAD_GRAYSCALE)
+# Resize the images to the same size, if necessary
+height, width = classmates_images[0].shape[:2]
+resized_images = [cv2.resize(image, (width, height)) for image in classmates_images]
 
-# Convertir las imágenes a vectores de características
-X = np.array([img1.flatten(), img2.flatten(), img3.flatten(), ..., imgN.flatten()])
+# Calculate the average face
+mean_face = np.mean(resized_images, axis=0)
 
-# Calcular la media de las imágenes
-mean_face = np.mean(X, axis=0)
+# Plot the average face
+plt.imshow(mean_face, cmap='gray')
+plt.show()
 
-# Calcular los componentes principales de las caras
-cov = np.cov(X.T)
-eigenvalues, eigenvectors = np.linalg.eig(cov)
-idx = eigenvalues.argsort()[::-1]
-eigenvectors = eigenvectors[:, idx]
-eigenvalues = eigenvalues[idx]
-
-# Elegir los primeros k componentes principales para reconstruir la cara media
-k = 10
-weights = eigenvectors[:, :k].T.dot(X - mean_face)
-mean_reconstructed = mean_face + eigenvectors[:, :k].dot(weights)
-
-# Redimensionar la cara media a 256x256 pí
+# Calculate the Euclidean distance between your face and the average face
+your_image = cv2.imread('my_imagen.jpg')
+your_gray_image = cv2.cvtColor(your_image, cv2.COLOR_BGR2GRAY)
+resized_your_image = cv2.resize(your_gray_image, (width, height))
+distance = np.linalg.norm(resized_your_image - mean_face)
+print('Distance between your face and the average face: {:.2f}'.format(distance))
