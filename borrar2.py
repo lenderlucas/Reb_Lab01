@@ -10,7 +10,7 @@ gauth = GoogleAuth()
 gauth.LocalWebserverAuth() 
 
 
-directorio_credenciales = 'credentials_module.json'
+directorio_credenciales = './conexion/credentials_module.json'
 
 # INICIAR SESION
 def login():

@@ -4,7 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 # Cargar la imagen en color
-img = cv2.imread('./imagen/deep-learning.jpg')
+img = cv2.imread('./imagen/Lender Lucas.jpg')
 
 # Convertir la imagen a escala de grises
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -13,7 +13,7 @@ gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 resized = cv2.resize(gray, (256, 256), interpolation=cv2.INTER_AREA)
 
 # Guardar la imagen editada
-cv2.imwrite('./imagen/my_Imagen.jpg', resized)
+cv2.imwrite('./imagen/gray_Lender_Lucas.jpg', resized)
 
 # ruta donde se encuentran las imágenes
 ruta_imagenes = './imagen/'
@@ -60,6 +60,7 @@ resized_images = [cv2.resize(image, (width, height)) for image in classmates_ima
 mean_face = np.mean(resized_images, axis=0)
 
 # Plot the average face
+mean_face = cv2.resize(mean_face, (256, 256), interpolation=cv2.INTER_AREA)
 plt.imshow(mean_face, cmap='gray')
 plt.show()
 

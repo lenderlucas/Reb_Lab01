@@ -1,72 +1,49 @@
 import numpy as np
-from numpy.linalg import norm
 
-from random import normalvariate
-from math import sqrt
+class SVD:
 
+    def __init__(self,n_vectors):   
+        self.n_vectors=n_vectors 
 
-def randomUnitVector(n):
-    unnormalized = [normalvariate(0, 1) for _ in range(n)]
-    theNorm = sqrt(sum(x * x for x in unnormalized))
-    return [x / theNorm for x in unnormalized]
+    def fit(self,x):
+        '''Creates the matrtixes for SVD transformation and generates the truncate matrix, which allows
+        to reduce new features using
+        params used:
+        x: Data to train
+        n_vectors: How many vectors you will use
+        ''' 
+        self.x=x  
+        #compute the vectors
+        self.U, self.s, self.Vt = np.linalg.svd(self.x) 
+        #take the n_components we need
+        self.Uk = self.U[:, :self.n_vectors]
+        self.sk = np.diag(self.s[:self.n_vectors])
+        self.Vk = self.Vt[:self.n_vectors, :]    
+        #compute mean and std to standarization    
+        self.mu = np.mean(self.x, axis=0)
+        self.sigma = np.std(self.x, axis=0)
+        #compute truncate svd
+        self.truncate_svd=self.Vk.T
 
+    def transform(self,x):   
+        return ( x@ self.truncate_svd)
+    
+    def fit_transform(self,x):
+        self.x=x  
+        self.fit(x)
+        return self.transform(x)
+    
+    def inverse_transform(self): 
+        X_reconstructed = ( self.x@ self.truncate_svd).dot(self.truncate_svd.T) + np.mean(self.x, axis=0)      
+        return X_reconstructed
 
-def svd_1d(A, epsilon=1e-10):
-    ''' The one-dimensional SVD '''
-
-    n, m = A.shape
-    x = randomUnitVector(min(n,m))
-    lastV = None
-    currentV = x
-
-    if n > m:
-        B = np.dot(A.T, A)
-    else:
-        B = np.dot(A, A.T)
-
-    iterations = 0
-    while True:
-        iterations += 1
-        lastV = currentV
-        currentV = np.dot(B, lastV)
-        currentV = currentV / norm(currentV)
-
-        if abs(np.dot(currentV, lastV)) > 1 - epsilon:
-            print("converged in {} iterations!".format(iterations))
-            return currentV
-
-
-def svd(A, k=None, epsilon=1e-10):
-    '''
-        Compute the singular value decomposition of a matrix A
-        using the power method. A is the input matrix, and k
-        is the number of singular values you wish to compute.
-        If k is None, this computes the full-rank decomposition.
-    '''
-    A = np.array(A, dtype=float)
-    n, m = A.shape
-    svdSoFar = []
-    if k is None:
-        k = min(n, m)
-
-    for i in range(k):
-        matrixFor1D = A.copy()
-
-        for singularValue, u, v in svdSoFar[:i]:
-            matrixFor1D -= singularValue * np.outer(u, v)
-
-        if n > m:
-            v = svd_1d(matrixFor1D, epsilon=epsilon)  # next singular vector
-            u_unnormalized = np.dot(A, v)
-            sigma = norm(u_unnormalized)  # next singular value
-            u = u_unnormalized / sigma
-        else:
-            u = svd_1d(matrixFor1D, epsilon=epsilon)  # next singular vector
-            v_unnormalized = np.dot(A.T, u)
-            sigma = norm(v_unnormalized)  # next singular value
-            v = v_unnormalized / sigma
-
-        svdSoFar.append((sigma, u, v))
-
-    singularValues, us, vs = [np.array(x) for x in zip(*svdSoFar)]
-    return singularValues, us.T, vs
+'''
+    def aplicar_valores(self,x):
+        self.x=x 
+        U, S, V = np.linalg.svd(self)
+        # Tomamos sólo los primeros X valores singulares
+        S = np.diag(S[:25])
+        # Reconstruimos la imagen utilizando sólo los primeros x valores singulares
+        imagen_reconstruida = U[:,:25] @ S @ V[:25,:] 
+        return imagen_reconstruida    
+        '''
