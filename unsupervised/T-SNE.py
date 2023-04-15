@@ -118,7 +118,7 @@ def q_joint(Y):
     np.fill_diagonal(exp_distances, 0.)
     # Divide by the sum of the entire exponentiated matrix
     return exp_distances / np.sum(exp_distances), None
-
+    
 
 def symmetric_sne_grad(P, Q, Y, _):
     """Estimate the gradient of the cost with respect to Y"""
